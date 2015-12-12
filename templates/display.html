@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="row">
+	<div class="col-md-12">
+
+		<hr>
+		{% for m in media %}
+			<p>
+				<img src="{{m.images['low_resolution'].url}}" alt="{{m.caption.text}}">
+				<br>
+				{{m.caption.text}}
+				<br>
+				<h1>
+				{{m.user.username}}
+				</h1>
+				<small><a href="{{m.link}}">view on instagram</a></small>
+			</p>
+
+		{% endfor %}
+	</div>
+	
+
+</div>
+
+{% endblock %}
