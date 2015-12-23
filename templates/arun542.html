@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="row">
+	<div class="col-md-12">
+
+		<hr>
+		{% if post_user.first_login == 0 %}
+			<h1><center> Welcome {{post_user.user_name}}</center></h1>
+			<h3><center>Please click on Import to import all existing media</center></h3>
+			<form action="" method="post">
+				<input type="submit" name="Import" value="Import stuff">
+			</form>
+		{% else %}	
+			{% for m in media %}
+				<p>
+					<img src="{{m.img_url}}" alt="">
+					<form action="" method="post">
+						<input type="text" name="url{{m.un_id}}">
+  					</form>
+				</p>
+
+			{% endfor %}
+		{% endif %}
+	</div>
+	
+
+</div>
+
+{% endblock %}
