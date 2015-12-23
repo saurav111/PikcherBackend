@@ -72,12 +72,11 @@ def page_visit(usernm, userid):
 				if request.form['Import'] == 'Import stuff':
 					userAPI = InstagramAPI(access_token=session['instagram_access_token'])
 					all_media, next = userAPI.user_recent_media(user_id=session['instagram_user'].get('id'),count=100)
+					post_user.first_login = 1
 					for m in all_media:
 						print post_user.un_id
 						loc =models.Images(img_url=m.images['low_resolution'].url, user_id=post_user.un_id)
 						db.session.add(loc)
-					db.session.commit()
-					post_user.first_login = 1
 					db.session.commit()
 
 
