@@ -1,3 +1,4 @@
+##current value= 14300
 import os
 import time
 from instagram.client import InstagramAPI
@@ -42,33 +43,42 @@ def user_photos():
 		if pre_user is None:
 			return redirect('/register')
 		else:
-			rurl='/'+usernm+'_'+str(pre_user.un_id)
-#			for m in recent_media:
-#				loc =models.Images(img_url=m.images['low_resolution'].url, user_id=pre_user.un_id)
-#				db.session.add(loc)
-#				db.session.commit()
+			rurl='/'+usernm+'/'+str(pre_user.un_id)
 			return redirect(rurl)
 	else:
 		return redirect('/connect')
 
 ### All the Users
-@app.route('/arun542_1', methods=['GET', 'POST'])
-def page_visit():
-		userAPI = InstagramAPI(access_token=session['instagram_access_token'])
-		recent_media = models.Images.query.filter_by(user_id=1).all()
+@app.route('/<usernm>/<userid>', methods=['GET', 'POST'])
+def page_visit(usernm, userid):
+		post_user=models.User.query.filter_by(user_name=usernm).first()
+		r_media = models.Images.query.filter_by(user_id=userid).all()
 		templateData = {
-		'media' : recent_media
+		'media' : r_media
 		}
 		if request.method == 'POST':
-			for rm in recent_media:
-				strr="url"+str(rm.un_id)
-				new_url= request.form[strr]
-				if new_url is not None:
-					rm.user_link= new_url
-					print rm.user_link
-					print rm.img_url
-			db.session.commit()
-		return render_template('arun542.html', **templateData)
+			print post_user.first_login
+			if post_user.first_login == 1:
+				for rm in r_media:
+					strr="url"+str(rm.un_id)
+					new_url= request.form[strr]
+					if new_url is not None:
+						rm.user_link= new_url
+				db.session.commit()
+			else:
+				if request.form['Import'] == 'Import stuff':
+					userAPI = InstagramAPI(access_token=session['instagram_access_token'])
+					all_media, next = userAPI.user_recent_media(user_id=session['instagram_user'].get('id'),count=100)
+					for m in all_media:
+						loc =models.Images(img_url=m.images['low_resolution'].url, user_id=post_user.un_id)
+						db.session.add(loc)
+					post_user.first_login = 1
+					db.session.commit()
+
+
+		html_add=usernm+'.html'
+		return render_template(html_add, post_user=post_user, **templateData)
+
 
 # Redirect users to Instagram for login
 @app.route('/connect')
