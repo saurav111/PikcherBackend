@@ -56,22 +56,27 @@ def page_visit(usernm, userid):
 		templateData = {
 		'media' : r_media
 		}
-		if request.method == 'POST':
-			print post_user.first_login
-			if post_user.first_login == 1:
+		print post_user.first_login
+		if post_user.first_login == 1:
+			if request.method == 'POST':
 				for rm in r_media:
 					strr="url"+str(rm.un_id)
 					new_url= request.form[strr]
+					print "afadfsdf"
 					if new_url is not None:
+						print "sfgfjgdfbdb dfn b"
 						rm.user_link= new_url
 				db.session.commit()
-			else:
+		else:
+			if request.method == 'POST':
 				if request.form['Import'] == 'Import stuff':
 					userAPI = InstagramAPI(access_token=session['instagram_access_token'])
 					all_media, next = userAPI.user_recent_media(user_id=session['instagram_user'].get('id'),count=100)
 					for m in all_media:
+						print post_user.un_id
 						loc =models.Images(img_url=m.images['low_resolution'].url, user_id=post_user.un_id)
 						db.session.add(loc)
+					db.session.commit()
 					post_user.first_login = 1
 					db.session.commit()
 

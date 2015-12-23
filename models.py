@@ -12,4 +12,4 @@ class Images(db.Model):
 	un_id = db.Column(db.Integer, primary_key=True)
 	img_url = db.Column(db.String(120), unique=True)
 	user_id = db.Column(db.Integer, db.ForeignKey('users.un_id'))
-	user_link = db.Column(db.String(120), default= 'None', unique=True)
+	user_link = db.Column(db.String(120), default= 'None')
