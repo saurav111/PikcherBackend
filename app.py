@@ -1,18 +1,27 @@
-##current value= 14300
+##current value= 14800
 import os
 import time
 from instagram.client import InstagramAPI
-from flask import Flask, request, render_template, session, redirect, abort, flash, jsonify
+from flask import Flask, request, render_template, session, redirect, abort, flash, jsonify, g
 from flask_s3 import FlaskS3
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.login import LoginManager
+from flask.ext.login import login_user, logout_user, current_user, login_required
 from sqlalchemy.orm import sessionmaker
-
+from sqlalchemy import update, engine
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from models import db, User, Images
 
 app = Flask(__name__)   # create our flask app
 app.config.from_object('config')
-db = SQLAlchemy(app)
+#///////////////////////////////////////////////////////////
 
-import models
+engine = create_engine('sqlite:///app.db')
+db.metadata.bind =engine
+
+DBsession =sessionmaker(bind=engine)
+sessionn= DBsession()
 
 #/////////////////////////////////////////////////s3 details
 app.config['FLASKS3_BUCKET_NAME'] = 'mybucketname'
@@ -21,6 +30,11 @@ s3 = FlaskS3(app)
 app.secret_key = '327e5fca521b4e91818db7e39ec998d3'
 
 #/////////////////////////////////////////////////////////////////////////
+
+lm = LoginManager()
+lm.init_app(app)
+lm.login_view = '/connect'
+
 #////////////////////////////////////////////////////////////////////////
 
 # configure Instagram API
@@ -31,55 +45,76 @@ instaConfig = {
 }
 api = InstagramAPI(**instaConfig)
 
+@lm.user_loader
+def load_user(id):
+    return sessionn.query(User).get(int(id))
+
+@app.before_request
+def before_request():
+    g.user = current_user
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    g.user=None
+    session.clear()
+    return redirect('/connect')
+
 @app.route('/')
 def user_photos():
 
 	# if instagram info is in session variables, then display user photos
-	if 'instagram_access_token' in session and 'instagram_user' in session:
-		userAPI = InstagramAPI(access_token=session['instagram_access_token'])
-		recent_media, next = userAPI.user_recent_media(user_id=session['instagram_user'].get('id'),count=25)
-		usernm= recent_media[0].user.username
-		pre_user = models.User.query.filter_by(user_name=usernm).first()
-		if pre_user is None:
-			return redirect('/register')
+		if 'instagram_access_token' in session and 'instagram_user' in session:
+#		if
+			print "akjdfakjsbbfad"
+			userAPI = InstagramAPI(access_token=session['instagram_access_token'])
+			recent_media, next = userAPI.user_recent_media(user_id=session['instagram_user'].get('id'),count=2)
+			usernm= recent_media[0].user.username
+			pre_user = sessionn.query(User).filter_by(user_name=usernm).first()
+			login_user(pre_user)
+			g.user=pre_user
+			if pre_user is None:
+				return redirect('/register')
+			else:
+				if pre_user.first_login == 0:
+					r_media, next = userAPI.user_recent_media(user_id=session['instagram_user'].get('id'),count=100)
+					for m in r_media:
+						loc = Images(img_url=m.images['low_resolution'].url, user_id=pre_user.un_id)
+						sessionn.add(loc)
+					sessionn.commit()
+				rurl='/'+usernm+'/'+str(pre_user.un_id)
+				return redirect(rurl)
 		else:
-			rurl='/'+usernm+'/'+str(pre_user.un_id)
-			return redirect(rurl)
-	else:
-		return redirect('/connect')
+			return redirect('/connect')
 
 ### All the Users
 @app.route('/<usernm>/<userid>', methods=['GET', 'POST'])
+@login_required
 def page_visit(usernm, userid):
-		post_user=models.User.query.filter_by(user_name=usernm).first()
-		r_media = models.Images.query.filter_by(user_id=userid).all()
+
+		post_user=g.user
+#		post_user = sessionn.query(User).filter_by(user_name=usernm).first()
+		r_media = sessionn.query(Images).filter_by(user_id=userid).all()
+		if post_user.first_login ==0:
+			post_user.first_login = 1
+
 		templateData = {
 		'media' : r_media
 		}
-		print post_user.first_login
-		if post_user.first_login == 1:
-			if request.method == 'POST':
-				for rm in r_media:
-					strr="url"+str(rm.un_id)
-					new_url= request.form[strr]
-					print "afadfsdf"
-					if new_url is not None:
-						print "sfgfjgdfbdb dfn b"
-						rm.user_link= new_url
-				db.session.commit()
-		else:
-			if request.method == 'POST':
-				if request.form['Import'] == 'Import stuff':
-					userAPI = InstagramAPI(access_token=session['instagram_access_token'])
-					all_media, next = userAPI.user_recent_media(user_id=session['instagram_user'].get('id'),count=100)
-					post_user.first_login = 1
-					for m in all_media:
-						print post_user.un_id
-						loc =models.Images(img_url=m.images['low_resolution'].url, user_id=post_user.un_id)
-						db.session.add(loc)
-					db.session.commit()
-
-
+		if request.method == 'POST':
+			f = request.form
+			for key in f.keys():
+			    for value in f.getlist(key):
+			    	if value is not None:
+						new_url=value
+						tab=key
+			for rm in r_media:
+				strr="url"+str(rm.un_id)
+				if strr==""+tab:
+					print value
+					print tab
+					rm.user_link= value			    		
+		sessionn.commit()
 		html_add=usernm+'.html'
 		return render_template(html_add, post_user=post_user, **templateData)
 
@@ -88,11 +123,16 @@ def page_visit(usernm, userid):
 @app.route('/connect')
 def main():
 
-	try:
-		url = api.get_authorize_url(scope=["likes","comments"])
-		return '<a href="%s">Connect with Instagram</a>' % url
-	except Exception as e:
-		print(e)
+	if g.user is not None and g.user.is_authenticated:
+		rurl='/'+g.user.user_name+'/'+str(g.user.un_id)
+		print "adfhbsjdfbhsjdfhsjdfhjsd"
+		return redirect(rurl)
+	else:
+		try:
+			url = api.get_authorize_url(scope=["likes","comments"])
+			return '<a href="%s">Connect with Instagram</a>' % url
+		except Exception as e:
+			print(e)
 # Instagram will redirect users back to this route after successfully logging in
 @app.route('/instagram_callback')
 def instagram_callback():
