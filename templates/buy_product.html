@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block body %}
+    <h1> "{{show_user.company_name}}"</h1>
+	<h3> Click Images to buy </h3>
+	<form action="" method="post">
+		<input type="submit" name="bttn" value="Featured">
+		<input type="submit" name="bttn" value="My Likes">
+  	</form> 
+
+    {% if my_likes == 0 %}
+
+		{% for m in show_media %}
+			<p>
+				{% if m.user_link is not none %}
+					<a href="{{m.user_link}}"><img src="{{m.img_url}}" alt=""></a>
+				{% else %}
+					<a href="http://www.google.com"><img src="{{m.img_url}}" alt=""></a>
+				{% endif %}
+			</p>
+
+		{% endfor %}
+
+	{% else %}
+		{% if 'instagram_access_token_likes' in session and 'instagram_user_likes' in session %}
+			<h3>Likes</h3>
+			{% for m in liked_media %}
+				<p>
+					{% if m.user_link is not none %}
+						<a href="{{m.user_link}}"><img src="{{m.img_url}}" alt=""></a>
+					{% else %}
+						<a href="http://www.google.com"><img src="{{m.img_url}}" alt=""></a>
+					{% endif %}
+				</p>
+			{% endfor %}
+		{% else %}	
+			<h3> Buy the products you have liked on Instagram </h3>
+			<h4><a href="/connect_for_likes/{{usernm}}"> Connect with instagram </a></h4>
+		{% endif %}
+	{% endif %}
+
+{% endblock %}

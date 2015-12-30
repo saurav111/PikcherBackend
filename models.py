@@ -13,6 +13,7 @@ class User(db):
     user_name = Column(String(64), unique=True)
 #   timestamp = Column(DateTime)
     first_login = Column(Integer)
+#    html_page = Column(String(64), unique=True)
 
     @property
     def is_authenticated(self):

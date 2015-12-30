@@ -62,11 +62,9 @@ def logout():
 
 @app.route('/')
 def user_photos():
-
+#		print session
 	# if instagram info is in session variables, then display user photos
 		if 'instagram_access_token' in session and 'instagram_user' in session:
-#		if
-			print "akjdfakjsbbfad"
 			userAPI = InstagramAPI(access_token=session['instagram_access_token'])
 			recent_media, next = userAPI.user_recent_media(user_id=session['instagram_user'].get('id'),count=2)
 			usernm= recent_media[0].user.username
@@ -115,14 +113,14 @@ def page_visit(usernm, userid):
 					print tab
 					rm.user_link= value			    		
 		sessionn.commit()
-		html_add=usernm+'.html'
-		return render_template(html_add, post_user=post_user, **templateData)
+#		html_add=usernm+'.html'
+		return render_template("link_adder.html", post_user=post_user, **templateData)
 
 
 # Redirect users to Instagram for login
 @app.route('/connect')
 def main():
-
+	g.link=0
 	if g.user is not None and g.user.is_authenticated:
 		rurl='/'+g.user.user_name+'/'+str(g.user.un_id)
 		print "adfhbsjdfbhsjdfhsjdfhjsd"
@@ -138,7 +136,7 @@ def main():
 def instagram_callback():
 
 	code = request.args.get('code')
-
+	print "asdsadasdasdas"
 	if code:
 
 		access_token, user = api.exchange_code_for_access_token(code)
@@ -149,10 +147,16 @@ def instagram_callback():
 			app.logger.debug(access_token)
 
 		# Sessions are used to keep this data 
-		session['instagram_access_token'] = access_token
-		session['instagram_user'] = user
+		if 'fetch_likes' in session:
+			session['instagram_access_token_likes'] = access_token
+			session['instagram_user_likes'] = user
+			urll="/"+session['seller_name']
+			return redirect(urll)
+		else:
+			session['instagram_access_token'] = access_token
+			session['instagram_user'] = user
 
-		return redirect('/') # redirect back to main page
+			return redirect('/') # redirect back to main page
 		
 	else:
 		return "Sorry no code provided"
@@ -167,6 +171,51 @@ def instagram_callback():
 @app.route('/register')
 def get_registered():
 	return render_template('register.html')
+
+#////////////////////////////////////////////for buyers
+
+@app.route('/connect_for_likes/<usernm>')
+def set_and_redirect(usernm):
+	re_url = api.get_authorize_url(scope=["public_content"])
+	session['fetch_likes'] = 1
+	session['seller_name'] = usernm
+	return redirect(re_url)
+
+@app.route('/<usernm>', methods=['GET', 'POST'])
+def display_user(usernm):
+	show_user = sessionn.query(User).filter_by(user_name=usernm).first()
+#	print show_user.user_name
+	show_media = sessionn.query(Images).filter_by(user_id=show_user.un_id).all()
+	liked_media=[]
+	my_likes=0
+	if request.method == 'POST':
+		f=request.form
+		print f['bttn']
+		if f['bttn']=='Featured':
+			my_likes=0
+		else:
+			my_likes=1
+	print my_likes
+
+	if my_likes==1:
+		if 'instagram_access_token_likes' in session and 'instagram_user_likes' in session:
+#			print session['instagram_access_token_likes']
+			userAPI = InstagramAPI(access_token=session['instagram_access_token_likes'])
+#			print userAPI
+			liked_media, next = userAPI.user_liked_media()
+			print liked_media[0].likes[0]
+	show_liked=[]
+	for obj in show_media:
+		print obj.img_url
+	for img1 in liked_media:
+		for obj in show_media:
+#			print obj.img_url
+			if img1.likes[0] == obj.img_url:
+				show_liked.append(obj)
+
+	return render_template("buy_product.html",usernm=usernm, my_likes=my_likes, show_user=show_user, liked_media=show_liked, show_media=show_media)
+
+
 
 # This is a jinja custom filter
 @app.template_filter('strftime')
