@@ -11,6 +11,7 @@ class User(db):
     un_id = Column(Integer, primary_key=True)
     access_token = Column(String(120), unique=True)
     user_name = Column(String(64), unique=True)
+    company_name = Column(String(64), unique=True)
 #   timestamp = Column(DateTime)
     first_login = Column(Integer)
 #    html_page = Column(String(64), unique=True)
