@@ -1,0 +1,210 @@
+@font-face {
+  font-family: "San Francisco";
+  font-weight: 100;
+  src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-thin-webfont.woff2");
+}
+
+body, html{
+    height: 100%;
+    margin:0;
+    padding:0;
+	font-family: 'Lato', sans-serif;
+}
+
+h1{
+    font-weight: 300;
+}
+#paginated{
+    display: flex;
+    justify-content: center;
+}
+
+#likedStuff {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-direction: column;
+    /*justify-content: center;*/
+}
+
+.greyShit {
+    min-height: 100%;
+    margin-bottom: 0;
+    background-color: #F7F7F7;
+}
+header {
+	display: flex;
+	justify-content: space-between;
+    align-items:center;
+}
+
+
+
+form {
+	display: flex;
+}
+
+{
+	display: flex;
+	flex-wrap:wrap;
+	justify-content:center;
+}
+.imageElement
+{
+	max-width: 50%;
+	margin: 10px;
+}
+.row
+{
+    width: auto;
+	display: flex;
+}
+
+.linkBox
+{
+	width:80%;
+}
+
+header h1
+{
+    background-color: #000;
+    color: #fff;
+    padding: 10px;
+    border-radius: 2px;
+}
+/*.leftAligned
+{
+	margin: auto;
+}*/
+
+button{
+    height: 50px;
+    margin-left: 10px;
+    padding: 5px 10px 5px 10px;
+    color: #FFF;
+    background-color: #323a45;
+    font-size: 18px;
+    text-align: center;
+    font-style: normal;
+    border-radius: 5px;
+    width: 100%;
+    border: 1px solid #7323DB;
+    border-width: 1px 1px 3px;
+    box-shadow: 0 -1px 0 rgba(255,255,255,0.1) inset;
+    /*margin-bottom: 10px;*/
+}
+
+input[type="text"] {
+    margin-left: 10px;
+    padding: 5px 10px 5px 10px;
+    color: #000;
+    background-color: white;
+    font-size: 18px;
+    text-align: center;
+    font-style: normal;
+    border-radius: 5px;
+    width: 100%;
+    /*border: 1px solid #7323DB;*/
+    border-width: 1px 1px 3px;
+    box-shadow: 0 -1px 0 rgba(255,255,255,0.1) inset;
+    margin-bottom: 10px;
+}
+
+a.button {
+    padding: 19px 39px 18px 39px;
+    color: #FFF;
+    text-decoration: none;
+    background-color: #323a45;
+    font-size: 18px;
+    text-align: center;
+    font-style: normal;
+    border-radius: 5px;
+    width: 100%;
+    border: 1px solid #323a45;
+    border-width: 1px 1px 3px;
+    box-shadow: 0 -1px 0 rgba(255,255,255,0.1) inset;
+    margin-bottom: 10px;
+}
+
+#paginated a
+{
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+    width: 50%;
+    font-size: 2em;
+    background-color: #323a45;
+    color: ghostwhite;
+    text-align: center;
+}
+button
+{
+    height: 60px;
+    width: 200px;
+}
+
+@media only screen and (max-device-width: 380px) {
+    #paginated a
+    {
+        font-size: 3em;
+        text-decoration: none;
+    } 
+	#images
+	{
+		flex-direction: column;
+		width: 100%;
+	}
+	.imageElement
+	{
+        width: 95%;
+        align-self: center;
+        text-align: center;
+		max-width: 95%;
+		
+	}
+    .imageElement a
+    {
+/* 	    width: 100%; */
+    }
+    .imageElement a img
+    {
+	    width: 100%;
+    }
+    
+    header
+    {
+        font-size: 2.5em;
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center
+    }
+    button
+    {
+        padding: 0;
+        color: floralwhite;
+        background-color: #323a45;
+        font-size: 1.2em;
+        border-radius: 0px;
+        width: 49.5%;
+        border: 0;
+        border-width: 0;
+        box-shadow: 0;
+        margin: 0;
+        height: 150px;
+    }
+
+    form
+    {
+        justify-content: space-around;
+    }
+    header h1
+    {
+        margin: 0;
+    }
+    .greyShit h3
+    {
+        font-size: 2em;
+        text-align: center;
+    }
+}

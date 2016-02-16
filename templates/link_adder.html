@@ -1,21 +1,65 @@
-{% extends "layout.html" %}
+<html>
+<head>
+	<title></title>
+    <link href="/static/style.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Raleway:400,100' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,300' rel='stylesheet' type='text/css'>
+</head>
+<body>
 
-{% block body %}
-        {% if g.user.is_authenticated %}
-        	<a href="/logout">Logout</a>
-        {% endif %}
-
-		<div id="images">
-			{% for m in media %}
-				<p>
-					<img src="{{m.img_url}}" alt="">
-					<form action="" method="post">
-						<input type="text" name="url{{m.un_id}}">
-  					</form>
-				</p>
-
-			{% endfor %}
-		
+	{% if post_user.first_login==1 %}
+		<div id="SMMHeader">
+			<div>
+	       		<h4><a href="/logout" class="button">Logout</a></h4>
+	       	</div>
+	       	<center><h3> Manage your featured images and links </h3></center>
+	       	<div>
+	       		<h4><a href="/logout" class="button_hidden">Logout</a></h4>
+	       	</div>
+	    </div>
+       	<div class="greyShit">
+       		<hr>
+			<div class="images">
+				{% for m in media.items %}
+						<div class="imageElement">
+							<!-- <span class="close">&times;</span> -->
+							<img src="{{m.img_url}}" alt="">
+							<br></br>
+							{% if m.user_link != "None" %}
+								<form action="" method="post" class="row">
+									<input type="text" name="url{{m.un_id}}" class="linkBox" placeholder="{{m.user_link}}">
+			  					</form>
+			  					<form action="" method="post" class="deletion">
+									<input type="submit" name="delete{{m.un_id}}" value="x">
+			  					</form>	
+			  				{% else %}
+			  					<form action="" method="post" class="row">
+									<input type="text" name="url{{m.un_id}}" class="linkBox" placeholder="Paste item link and press enter to submit!">
+			  					</form>
+			  					<form action="" method="post" class="deletion">
+									<input type="submit" name="delete{{m.un_id}}" value="x">
+			  					</form>	
+			  				{% endif %}	
+						</div>
+				{% endfor %}
+			</div>
+			<div class="paginated">
+                {% if media.has_prev %}
+                    <a href="{{usernm}}{{userid}}{{url_for('page_visit', usernm = usernm, userid = userid, page=media.prev_num)}}"><< Newer posts</a>
+                {% endif %}
+                {% if media.has_next %}
+                    <a href="{{usernm}}{{userid}}{{url_for('page_visit', usernm = usernm, userid = userid, page=media.next_num)}}">Older posts >></a>
+                {% endif %}
+             </div>
 		</div>
+	{% else %}
+		<center><h3> Click import to get started and import all images from instagram </h3></center>
+		<center>
+			<form action="" method="post" class="row">
+				<input type="submit" name="first_import" value="import">
+			</form>
+		</center>
+	{% endif %}
 
-{% endblock %}
+</body>
+</html>

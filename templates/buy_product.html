@@ -1,42 +1,141 @@
-{% extends "layout.html" %}
+<!-- show_media is a Paginate object, NOT a list -->
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+    <link href='https://fonts.googleapis.com/css?family=Raleway:400,100' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,300' rel='stylesheet' type='text/css'>
+    <script src="static/jquery-2.2.0.min.js"></script>
+    <script src="/static/lazysizes.min.js" async=""></script>
+	<link href="/static/style.css" rel="stylesheet" type="text/css">  
+    <!-- start Mixpanel --><script type="text/javascript">(function(e,b){if(!b.__SV){var a,f,i,g;window.mixpanel=b;b._i=[];b.init=function(a,e,d){function f(b,h){var a=h.split(".");2==a.length&&(b=b[a[0]],h=a[1]);b[h]=function(){b.push([h].concat(Array.prototype.slice.call(arguments,0)))}}var c=b;"undefined"!==typeof d?c=b[d]=[]:d="mixpanel";c.people=c.people||[];c.toString=function(b){var a="mixpanel";"mixpanel"!==d&&(a+="."+d);b||(a+=" (stub)");return a};c.people.toString=function(){return c.toString(1)+".people (stub)"};i="disable time_event track track_pageview track_links track_forms register register_once alias unregister identify name_tag set_config people.set people.set_once people.increment people.append people.union people.track_charge people.clear_charges people.delete_user".split(" ");
+for(g=0;g<i.length;g++)f(c,i[g]);b._i.push([a,e,d])};b.__SV=1.2;a=e.createElement("script");a.type="text/javascript";a.async=!0;a.src="undefined"!==typeof MIXPANEL_CUSTOM_LIB_URL?MIXPANEL_CUSTOM_LIB_URL:"file:"===e.location.protocol&&"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js".match(/^\/\//)?"https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js":"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";f=e.getElementsByTagName("script")[0];f.parentNode.insertBefore(a,f)}})(document,window.mixpanel||[]);
+mixpanel.init("cf948668955eda2eb77326edbb14d858");</script><!-- end Mixpanel -->
+<script type="text/javascript">
+mixpanel.track_links(".imageElement a", "Clicked a new link!", {
+        "referrer": document.referrer
+    });
+</script>  
+<script type="text/javascript">
+    function isImageOk(img) {
+    // During the onload event, IE correctly identifies any images that
+    // weren't downloaded as not complete. Others should too. Gecko-based
+    // browsers act like NS4 in that they report this incorrectly.
+    if (!img.complete) {
+        return false;
+    }
 
-{% block body %}
-    <h1> "{{show_user.company_name}}"</h1>
-	<h3> Click Images to buy </h3>
-	<form action="" method="post">
-		<input type="submit" name="bttn" value="Featured">
-		<input type="submit" name="bttn" value="My Likes">
-  	</form> 
+    // However, they do have two very useful properties: naturalWidth and
+    // naturalHeight. These give the true size of the image. If it failed
+    // to load, either of these should be zero.
+    if (img.naturalWidth == 0) {
+        return false;
+    }
 
-    {% if my_likes == 0 %}
+    // No other way of checking: assume it's ok.
+    return true;
+}
 
-		{% for m in show_media %}
-			<p>
-				{% if m.user_link is not none %}
-					<a href="{{m.user_link}}"><img src="{{m.img_url}}" alt=""></a>
-				{% else %}
-					<a href="http://www.google.com"><img src="{{m.img_url}}" alt=""></a>
-				{% endif %}
-			</p>
 
-		{% endfor %}
+</script>
+</head>
+<body>
+    
+    <header>
+        <div>
+            <h1 style="display:inline"> {{show_user.company_name}} </h1>
+            <!-- <img src="./static/levis.jpg"> -->
+             
+        </div>
+        <form action="" method="post">
+            <button type="submit" name="bttn" value="Featured"> Featured </button>
+            <button type="submit" name="bttn" value="My Likes"> My Likes </button>
+        </form>
+    </header>
+    
+	<div class="greyShit">
+        
+        
+        {% if my_likes == 0 %}
+            {% if show_media.items |length > 0%}
+                <h3> Click an image to buy! </h3>
+                <div class="images">
+                    {% for m in show_media.items %}
+                        <div class="imageElement">
+                            {% if m.user_link != "None" %} 
+                                <a href="{{m.user_link}}">
+                                    <img src="{{m.img_url}}" alt="" onerror="this.parentNode.parentNode.style.display='none'">
+                                </a>
+                            {% else %}
+                                <a href="http://www.gandu.com">
+                                    <img src="{{m.img_url}}" alt="" onerror="this.parentNode.parentNode.style.display='none'">
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}  
+                </div>
+                <div class="paginated">
+                    {% if show_media.has_prev %}
+                        <a href="{{url_for('display_user', usernm=usernm, page=show_media.prev_num)}}"><< Newer posts</a>
+                    {% endif %}
+                    {% if show_media.has_next %}
+                        <a href="{{url_for('display_user', usernm=usernm, page=show_media.next_num)}}">Older posts >></a>
+                    {% endif %}
+                </div>
+            {% else %}
+                You haven't posted any photos yet!
+            {% endif %}
+        {% else %}
+            {% if 'instagram_access_token_likes' in session and 'instagram_user_likes' in session %}
+                {% if liked_media | length >0 %}
+                    <h3>Likes</h3>
+                    <div id="images">
+                        {% for m in liked_media %}
+                            <div class="imageElement">
+                                {% if m.user_link != "" %} 
+                                    <a href="{{m.user_link}}">
+                                        <img src="{{m.img_url}}" alt="" onerror="notLoaded()">
+                                    </a>
+                                {% else %}
+                                    <a href="http://www.facebook.com">
+                                        <img src="{{m.img_url}}" alt="" onerror="notLoaded()">
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endfor %}  
+                    </div>
+                {% else %}
+                    You haven't liked any products yet!
+                {% endif %}
+            {% else %}
+                <hr>
+                <div id="likedStuff">
+                    <!-- <div class="row"> -->
+                        <div class="likedItem"> <br></br> </div>
 
-	{% else %}
-		{% if 'instagram_access_token_likes' in session and 'instagram_user_likes' in session %}
-			<h3>Likes</h3>
-			{% for m in liked_media %}
-				<p>
-					{% if m.user_link is not none %}
-						<a href="{{m.user_link}}"><img src="{{m.img_url}}" alt=""></a>
-					{% else %}
-						<a href="http://www.google.com"><img src="{{m.img_url}}" alt=""></a>
-					{% endif %}
-				</p>
-			{% endfor %}
-		{% else %}	
-			<h3> Buy the products you have liked on Instagram </h3>
-			<h4><a href="/connect_for_likes/{{usernm}}"> Connect with instagram </a></h4>
-		{% endif %}
-	{% endif %}
+                        <div class="likedItem"><h3> Buy the products you have liked on Instagram </h3></div>
+                        <div class="likedItem"><h4><a href="/connect_for_likes/{{usernm}}" class="button"> Connect with Instagram </a></h4></div>
+                    <!-- </div> -->
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+    <script type="text/javascript">
+        // $(window).load( function() {
+        //     console.log(document.images);
+        //     for (var i = 0; i < document.images.length; i++) {
+        //         console.log(i);
+        //         console.log(isImageOk(document.images[i]));
 
-{% endblock %}
+        //         if (!isImageOk(document.images[i])) {
+        //             document.images[i].style.visibility = "hidden";
+        //         }
+        //     }
+        // });
+        function notLoaded() {
+            this.visibility = "hidden";
+        }
+    </script>
+
+</body>
+</html>

@@ -12,9 +12,9 @@ class User(db):
     access_token = Column(String(120), unique=True)
     user_name = Column(String(64), unique=True)
     company_name = Column(String(64), unique=True)
-#   timestamp = Column(DateTime)
+    user_id_insta= Column(String(64), unique=True)
     first_login = Column(Integer)
-#    html_page = Column(String(64), unique=True)
+    email = Column(String(120),unique=True)
 
     @property
     def is_authenticated(self):
@@ -39,7 +39,20 @@ class Images(db):
     un_id = Column(Integer, primary_key=True)
     img_url = Column(String(120), unique=True)
     user_id = Column(Integer, ForeignKey('users.un_id'))
-    user_link = Column(String(120), default= 'None')
+    user_link = Column(String(1000), default= 'None')
+    created_time = Column(String(64))
+    media_id = Column(String(120), unique=True)
+
+#class Tagged_images(db):
+#    __tablename__='tagged_images'
+#    un_id = Column(Integer, primary_key=True)
+#    img_url = Column(String(120), unique=True)
+#    img_tag = Column(String(120), unique=True)
+#    user_link = Column(String(1000), default= 'None')
+#    created_time = Column(String(64))
+#    user_id = Column(Integer, ForeignKey('users.un_id'))
+#     status = Column(Integer, default=0)
+
 
 engine = create_engine('sqlite:///app.db')
 
