@@ -1,2 +1,2 @@
-Flask==0.10
+Flask==2.2.5
 python-instagram
